@@ -37,6 +37,24 @@ npm run deploy
 
 Bu komut `npm run build` + `wrangler deploy` çalıştırır.
 
+### Cloudflare Dashboard (Git → Worker)
+
+**Settings → Build** alanlarını şöyle ayarlayın:
+
+| Alan | Değer |
+|------|--------|
+| Build command | `npm run build` |
+| **Deploy command** | `npx wrangler deploy` |
+
+**veya** tek satırda (build command boş):
+
+| Alan | Değer |
+|------|--------|
+| Build command | *(boş)* |
+| **Deploy command** | `npm run deploy` |
+
+Hata `dist does not exist` → deploy öncesi build çalışmıyor demektir. `npx wrangler deploy` tek başına yetmez.
+
 Bundle URL:
 
 `https://gengageai-demo.a-aydar2014.workers.dev/bundle.js`
