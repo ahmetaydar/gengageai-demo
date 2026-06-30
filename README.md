@@ -26,13 +26,32 @@ npm run build
 
 Çıktı: `dist/bundle.js`
 
-## Deploy (Cloudflare Pages örneği)
+## Deploy (Cloudflare Pages)
 
-1. Repoyu GitHub'a push edin
-2. Cloudflare Pages → Connect repository
-3. Build command: `npm run build`
-4. Build output directory: `dist`
-5. Deploy sonrası URL örneği: `https://gengageai-demo.pages.dev/bundle.js`
+### Yöntem A — Statik Pages (önerilen, en basit)
+
+Cloudflare Dashboard → Workers & Pages → projeniz → **Settings → Build**:
+
+| Alan | Değer |
+|------|--------|
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| **Deploy command** | **boş bırakın** |
+
+Deploy command alanına `npx wrangler deploy` yazmayın. Build bittikten sonra Cloudflare `dist/` klasörünü otomatik yayınlar.
+
+Bundle URL: `https://<proje-adiniz>.pages.dev/bundle.js`
+
+### Yöntem B — Wrangler ile static assets
+
+Deploy command kullanacaksanız repoda `wrangler.jsonc` hazır. Ayarlar:
+
+| Alan | Değer |
+|------|--------|
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+
+`vite.config.js` içinde `plugins: []` olması wrangler'ın Vite config hatasını önler.
 
 ## Console Snippet
 
