@@ -1,9 +1,3 @@
-const DEFAULT_QUESTIONS = [
-  'Bu ürünün temel özellikleri neler?',
-  'Ölçüleri nedir?',
-  'Satın almadan önce neyi kontrol etmeliyim?',
-];
-
 const STYLES = `
   :host {
     all: initial;
@@ -166,25 +160,6 @@ const STYLES = `
     border: 1px solid #f2d4d4;
   }
 
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 14px;
-  }
-
-  .chip {
-    border: 1px solid #d7e5de;
-    background: #ffffff;
-    color: #204438;
-    border-radius: 999px;
-    padding: 8px 12px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  .chip:hover { background: #f3faf6; }
-
   .composer {
     display: flex;
     gap: 8px;
@@ -234,9 +209,7 @@ export class AssistantWidget {
   #sendBtn;
   #stateCard;
   #progressBar;
-  #chips;
   #onAsk;
-  #isOpen = false;
   #isBusy = false;
 
   constructor({ onAsk } = {}) {
@@ -278,7 +251,6 @@ export class AssistantWidget {
           </div>
         </div>
         <div class="messages hidden" data-messages></div>
-        <div class="chips hidden" data-chips></div>
       </div>
       <form class="composer" data-composer>
         <input type="text" placeholder="Örn. hangi renk, kaç kişilik?" autocomplete="off" disabled />
@@ -293,7 +265,6 @@ export class AssistantWidget {
     this.#messages = this.#shadow.querySelector('[data-messages]');
     this.#stateCard = this.#shadow.querySelector('[data-state-card]');
     this.#progressBar = this.#shadow.querySelector('[data-progress-bar]');
-    this.#chips = this.#shadow.querySelector('[data-chips]');
     this.#input = this.#shadow.querySelector('input');
     this.#sendBtn = this.#shadow.querySelector('button[type="submit"]');
 
@@ -307,13 +278,11 @@ export class AssistantWidget {
   }
 
   open() {
-    this.#isOpen = true;
     this.#launcher.classList.add('hidden');
     this.#panel.classList.remove('hidden');
   }
 
   close() {
-    this.#isOpen = false;
     this.#panel.classList.add('hidden');
     this.#launcher.classList.remove('hidden');
   }
@@ -322,7 +291,6 @@ export class AssistantWidget {
     this.open();
     this.#stateCard.classList.remove('hidden');
     this.#messages.classList.add('hidden');
-    this.#chips.classList.add('hidden');
     this.#shadow.querySelector('[data-state-title]').textContent = '';
     this.#shadow.querySelector('[data-state-text]').textContent = message;
 
@@ -340,27 +308,12 @@ export class AssistantWidget {
     this.#setComposerEnabled(false);
   }
 
-  setLoading(message) {
-    this.setPreparing(message);
-  }
-
-  setReady({ sampleQuestions = DEFAULT_QUESTIONS } = {}) {
+  setReady() {
     this.#shadow.querySelector('[data-progress]')?.classList.add('hidden');
     this.#stateCard.classList.add('hidden');
     this.#messages.classList.remove('hidden');
-    this.#chips.classList.remove('hidden');
 
     this.#messages.innerHTML = '';
-    this.#chips.innerHTML = '';
-    sampleQuestions.forEach((question) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'chip';
-      chip.textContent = question;
-      chip.addEventListener('click', () => this.#submitQuestion(question));
-      this.#chips.appendChild(chip);
-    });
-
     this.addAssistantMessage('Merhaba! Bu ürün hakkında merak ettiklerinizi sorabilirsiniz.');
 
     this.#setComposerEnabled(true);
@@ -368,9 +321,7 @@ export class AssistantWidget {
 
   resetConversation() {
     this.#messages.innerHTML = '';
-    this.#chips.innerHTML = '';
     this.#messages.classList.add('hidden');
-    this.#chips.classList.add('hidden');
     this.#isBusy = false;
     this.#setComposerEnabled(false);
   }
@@ -421,7 +372,6 @@ export class AssistantWidget {
   #showState(title, message) {
     this.#stateCard.classList.remove('hidden');
     this.#messages.classList.add('hidden');
-    this.#chips.classList.add('hidden');
     this.#shadow.querySelector('[data-state-title]').textContent = title;
     this.#shadow.querySelector('[data-state-text]').textContent = message;
   }

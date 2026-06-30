@@ -14,7 +14,7 @@ Rules:
 - For buying advice, mention only facts that appear on the page.
 - Do not mention that you are an AI model.`;
 
-export function isPromptApiSupported() {
+function isPromptApiSupported() {
   return typeof LanguageModel !== 'undefined';
 }
 

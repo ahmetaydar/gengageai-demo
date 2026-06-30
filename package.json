@@ -5,10 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev.html",
-    "build": "vite build && node scripts/verify-build.js && node scripts/copy-deploy.js",
-    "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy",
-    "cf:deploy": "node scripts/cf-deploy.mjs"
+    "build": "vite build && node scripts/postbuild.js",
+    "deploy": "npm run build && wrangler deploy"
   },
   "devDependencies": {
     "vite": "^6.3.5",

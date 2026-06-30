@@ -1,4 +1,4 @@
-import { extractProductFacts, generateSampleQuestions } from './extractor.js';
+import { extractProductFacts } from './extractor.js';
 import { LocalProductAssistant, checkAvailability } from './assistant.js';
 import { AssistantWidget } from './ui.js';
 
@@ -24,7 +24,7 @@ async function loadProduct(app) {
   });
 
   app.productKey = getProductKey();
-  widget.setReady({ sampleQuestions: generateSampleQuestions(facts) });
+  widget.setReady();
 }
 
 function watchProductChanges(app) {

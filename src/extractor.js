@@ -25,7 +25,7 @@ function isNoise(text) {
 /**
  * Clicks visible "show more" controls so hidden PDP content becomes extractable.
  */
-export async function expandHiddenContent(root = document) {
+async function expandHiddenContent(root = document) {
   const buttons = [...root.querySelectorAll('button, a, [role="button"], span')];
   const targets = buttons.filter((el) => {
     const label = normalizeText(el.textContent).toLowerCase();
@@ -331,80 +331,4 @@ export function formatFactsForPrompt(facts) {
   }
 
   return lines.join('\n');
-}
-
-function findAttribute(attributes, ...needles) {
-  for (const [key, value] of Object.entries(attributes)) {
-    const normalizedKey = key.toLowerCase();
-    if (needles.some((needle) => normalizedKey.includes(needle))) {
-      return value;
-    }
-  }
-  return null;
-}
-
-/**
- * Builds contextual quick-question chips from the current product facts.
- */
-export function generateSampleQuestions(facts) {
-  const questions = [];
-  const title = (facts.title || '').toLowerCase();
-  const attrs = facts.attributes || {};
-
-  const color = findAttribute(attrs, 'renk', 'color');
-  const capacity = findAttribute(attrs, 'kapasite', 'kişilik', 'kisi');
-  const width = findAttribute(attrs, 'genişlik', 'genislik', 'en');
-  const height = findAttribute(attrs, 'yükseklik', 'yukseklik', 'boy');
-  const material = findAttribute(attrs, 'malzeme', 'kumaş', 'kumas');
-  const storage = findAttribute(attrs, 'çekmeceli', 'cekmeceli', 'depolama', 'hacim');
-  const foldable = findAttribute(attrs, 'katlanır', 'katlanir', 'yataklı', 'yatakli');
-
-  if (color) {
-    questions.push('Hangi renkte?');
-  }
-
-  if (capacity) {
-    questions.push('Kaç kişilik?');
-  }
-
-  if (storage || /dolap|gardrop|komodin|kanepe|koltuk/i.test(title)) {
-    questions.push('Depolama alanı var mı?');
-  }
-
-  if (width || height) {
-    questions.push('Ölçüleri nedir?');
-  }
-
-  if (material) {
-    questions.push('Hangi malzemeden yapılmış?');
-  }
-
-  if (foldable || /çekyat|yataklı|yatakli|bazalı|bazali/i.test(title)) {
-    questions.push('Yatak özelliği var mı?');
-  }
-
-  const hasAssemblyNote =
-    facts.highlights?.some((note) => /demonte|kurulum/i.test(note)) ||
-    /demonte|kurulum/i.test(facts.description || '');
-
-  if (hasAssemblyNote) {
-    questions.push('Montaj gerekir mi?');
-  }
-
-  if (/kanepe|koltuk|çekyat|oturma/i.test(title)) {
-    questions.push('Oturma odası için uygun mu?');
-  } else if (/buzdolabı|buzdolabi|çamaşır|camasir|fırın|firin/i.test(title)) {
-    questions.push('Enerji tüketimi nedir?');
-  } else if (/boya|fırça|firça/i.test(title)) {
-    questions.push('Hangi yüzeylerde kullanılır?');
-  }
-
-  questions.push('Satın almadan önce neyi kontrol etmeliyim?');
-
-  const unique = [...new Set(questions)];
-  if (unique.length < 4) {
-    unique.unshift('Bu ürünün temel özellikleri neler?');
-  }
-
-  return unique.slice(0, 5);
 }
