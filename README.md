@@ -26,49 +26,53 @@ npm run build
 
 Çıktı: `dist/bundle.js` (+ `dist/index.html`, `dist/_headers`)
 
-## Deploy (Cloudflare Pages)
+## Deploy (önerilen: Cloudflare Workers)
 
-Cloudflare Dashboard → **Settings → Build**:
+Bu proje statik bir `bundle.js` sunar. **Workers static assets** ile deploy etmek en sorunsuz yol.
+
+```bash
+npm install
+npm run deploy
+```
+
+Bu komut `npm run build` + `wrangler deploy` çalıştırır.
+
+Bundle URL:
+
+`https://gengageai-demo.a-aydar2014.workers.dev/bundle.js`
+
+Doğrulama: URL'yi tarayıcıda açın, ilk satır `(function` ile başlamalı.
+
+### Cloudflare Pages (opsiyonel)
+
+Pages kullanacaksanız:
 
 | Alan | Değer |
 |------|--------|
 | Framework preset | **None** |
 | Build command | `npm run build` |
 | Build output directory | **`dist`** |
-| **Deploy command** | **boş** |
+| Deploy command | **boş** |
 
-**Önemli:** Output `dist` olmazsa `/bundle.js` HTML döner ve asistan çalışmaz.
-
-Deploy sonrası doğrulama — tarayıcıda açın:
-
-`https://gengageai-demo.pages.dev/bundle.js`
-
-İlk satır `(function` ile başlamalı. HTML görürseniz build output yanlıştır.
-
-Bundle URL: `https://gengageai-demo.pages.dev/bundle.js`
+Bazı ağlarda `*.pages.dev` zaman aşımı verebilir; bu yüzden Workers tercih edilir.
 
 ## Console Snippet
 
 Koçtaş PDP'de Console'a yapıştırın (`snippet.js`):
 
 ```javascript
-(function gengageaiLoad() {
-  const BUNDLE_URL = 'https://gengageai-demo.pages.dev/bundle.js';
+(function () {
+  const BUNDLE_URL = 'https://gengageai-demo.a-aydar2014.workers.dev/bundle.js';
   if (window.__GENGAGEAI_ASSISTANT__?.initialized) {
     window.__GENGAGEAI_ASSISTANT__.widget?.open();
-    return 'GengageAI: asistan zaten yüklü';
+    return;
   }
-  const stale = document.getElementById('gengageai-assistant-loader');
-  if (stale) stale.remove();
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.id = 'gengageai-assistant-loader';
-    script.src = BUNDLE_URL;
-    script.async = true;
-    script.onload = () => resolve('GengageAI: bundle yüklendi');
-    script.onerror = () => reject(new Error('Bundle yüklenemedi: ' + BUNDLE_URL));
-    document.head.appendChild(script);
-  });
+  document.getElementById('gengageai-assistant-loader')?.remove();
+  const script = document.createElement('script');
+  script.id = 'gengageai-assistant-loader';
+  script.src = BUNDLE_URL;
+  script.async = true;
+  document.head.appendChild(script);
 })();
 ```
 

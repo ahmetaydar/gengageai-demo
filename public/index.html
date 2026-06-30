@@ -4,8 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GengageAI Bundle</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+      .ok { color: #0f6b4f; }
+      .err { color: #b42318; }
+      code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+    </style>
   </head>
   <body>
-    <p>GengageAI deploy aktif. Bundle: <a href="/bundle.js">/bundle.js</a></p>
+    <h1>GengageAI</h1>
+    <p>Bundle: <a href="/bundle.js">/bundle.js</a></p>
+    <p id="status">Kontrol ediliyor…</p>
+    <script>
+      const el = document.getElementById('status');
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 10000);
+      fetch('/bundle.js', { method: 'GET', signal: ctrl.signal })
+        .then((r) => r.text())
+        .then((text) => {
+          if (text.trimStart().startsWith('(function') || text.includes('use strict')) {
+            el.innerHTML = '<span class="ok">✓ bundle.js OK (' + Math.round(text.length / 1024) + ' KB)</span>';
+          } else {
+            el.innerHTML = '<span class="err">✗ bundle.js HTML döndürüyor — Cloudflare output <code>dist</code> olmalı</span>';
+          }
+        })
+        .catch(() => {
+          el.innerHTML = '<span class="err">✗ bundle.js zaman aşımı — Pages yerine Workers veya jsDelivr kullanın (README)</span>';
+        });
+    </script>
   </body>
 </html>

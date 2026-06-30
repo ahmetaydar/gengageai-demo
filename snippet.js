@@ -1,30 +1,24 @@
 /**
  * Koçtaş PDP → F12 Console → yapıştır → Enter
- * Not: undefined dönmesi normal değil; aşağıdaki sürüm Promise döner.
+ * Bundle host: Cloudflare Workers (static assets)
  */
-(function gengageaiLoad() {
-  const BUNDLE_URL = 'https://gengageai-demo.pages.dev/bundle.js';
+(function () {
+  const BUNDLE_URL = 'https://gengageai-demo.a-aydar2014.workers.dev/bundle.js';
 
   if (window.__GENGAGEAI_ASSISTANT__?.initialized) {
     window.__GENGAGEAI_ASSISTANT__.widget?.open();
-    return 'GengageAI: asistan zaten yüklü';
+    console.log('[GengageAI] Asistan zaten yüklü.');
+    return;
   }
 
-  const stale = document.getElementById('gengageai-assistant-loader');
-  if (stale) stale.remove();
+  document.getElementById('gengageai-assistant-loader')?.remove();
 
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.id = 'gengageai-assistant-loader';
-    script.src = BUNDLE_URL;
-    script.async = true;
-    script.onload = () => resolve('GengageAI: bundle yüklendi, asistan başlıyor…');
-    script.onerror = () =>
-      reject(
-        new Error(
-          'Bundle yüklenemedi. Tarayıcıda şu adresi açın: ' + BUNDLE_URL
-        )
-      );
-    document.head.appendChild(script);
-  });
+  const script = document.createElement('script');
+  script.id = 'gengageai-assistant-loader';
+  script.src = BUNDLE_URL;
+  script.async = true;
+  script.onload = () => console.log('[GengageAI] Bundle yüklendi.');
+  script.onerror = () =>
+    console.error('[GengageAI] Bundle yüklenemedi:', BUNDLE_URL);
+  document.head.appendChild(script);
 })();
