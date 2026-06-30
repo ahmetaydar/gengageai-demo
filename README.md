@@ -39,21 +39,26 @@ Bu komut `npm run build` + `wrangler deploy` çalıştırır.
 
 ### Cloudflare Dashboard (Git → Worker)
 
-**Settings → Build** alanlarını şöyle ayarlayın:
+Wrangler `deploy/` klasörünü kullanır (repoda commit edilir). Deploy command `npx wrangler deploy` olsa bile build gerekmez.
+
+**Kod değiştirdikten sonra** push öncesi local:
+```bash
+npm run build
+git add deploy/bundle.js
+git commit -m "Update bundle"
+git push
+```
+
+İsterseniz build'i CI'da otomatik çalıştırın:
 
 | Alan | Değer |
 |------|--------|
 | Build command | `npm run build` |
-| **Deploy command** | `npx wrangler deploy` |
+| Deploy command | `npx wrangler deploy` |
 
-**veya** tek satırda (build command boş):
+**veya** tek komut:
 
-| Alan | Değer |
-|------|--------|
-| Build command | *(boş)* |
-| **Deploy command** | `npm run deploy` |
-
-Hata `dist does not exist` → deploy öncesi build çalışmıyor demektir. `npx wrangler deploy` tek başına yetmez.
+| Deploy command | `npm run deploy` |
 
 Bundle URL:
 
