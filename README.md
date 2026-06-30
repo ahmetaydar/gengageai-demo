@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-`index.html` mock PDP ile local test sağlar.
+`dev.html` mock PDP ile local test sağlar.
 
 ## Build
 
@@ -24,51 +24,51 @@ npm run dev
 npm run build
 ```
 
-Çıktı: `dist/bundle.js`
+Çıktı: `dist/bundle.js` (+ `dist/index.html`, `dist/_headers`)
 
 ## Deploy (Cloudflare Pages)
 
-### Yöntem A — Statik Pages (önerilen, en basit)
-
-Cloudflare Dashboard → Workers & Pages → projeniz → **Settings → Build**:
+Cloudflare Dashboard → **Settings → Build**:
 
 | Alan | Değer |
 |------|--------|
+| Framework preset | **None** |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
-| **Deploy command** | **boş bırakın** |
+| Build output directory | **`dist`** |
+| **Deploy command** | **boş** |
 
-Deploy command alanına `npx wrangler deploy` yazmayın. Build bittikten sonra Cloudflare `dist/` klasörünü otomatik yayınlar.
+**Önemli:** Output `dist` olmazsa `/bundle.js` HTML döner ve asistan çalışmaz.
 
-Bundle URL: `https://06e77fc5.gengageai-demo.pages.dev/bundle.js`
+Deploy sonrası doğrulama — tarayıcıda açın:
 
-### Yöntem B — Wrangler ile static assets
+`https://gengageai-demo.pages.dev/bundle.js`
 
-Deploy command kullanacaksanız repoda `wrangler.jsonc` hazır. Ayarlar:
+İlk satır `(function` ile başlamalı. HTML görürseniz build output yanlıştır.
 
-| Alan | Değer |
-|------|--------|
-| Build command | `npm run build` |
-| Deploy command | `npx wrangler deploy` |
-
-`vite.config.js` içinde `plugins: []` olması wrangler'ın Vite config hatasını önler.
+Bundle URL: `https://gengageai-demo.pages.dev/bundle.js`
 
 ## Console Snippet
 
-`snippet.js` içindeki `YOUR_DEPLOY_URL` değerini deploy URL'nizle değiştirin, sonra Koçtaş PDP'de Console'a yapıştırın:
+Koçtaş PDP'de Console'a yapıştırın (`snippet.js`):
 
 ```javascript
-(function () {
+(function gengageaiLoad() {
+  const BUNDLE_URL = 'https://gengageai-demo.pages.dev/bundle.js';
   if (window.__GENGAGEAI_ASSISTANT__?.initialized) {
     window.__GENGAGEAI_ASSISTANT__.widget?.open();
-    return;
+    return 'GengageAI: asistan zaten yüklü';
   }
-  if (document.getElementById('gengageai-assistant-loader')) return;
-  const script = document.createElement('script');
-  script.id = 'gengageai-assistant-loader';
-  script.src = 'https://06e77fc5.gengageai-demo.pages.dev/bundle.js';
-  script.async = true;
-  document.head.appendChild(script);
+  const stale = document.getElementById('gengageai-assistant-loader');
+  if (stale) stale.remove();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.id = 'gengageai-assistant-loader';
+    script.src = BUNDLE_URL;
+    script.async = true;
+    script.onload = () => resolve('GengageAI: bundle yüklendi');
+    script.onerror = () => reject(new Error('Bundle yüklenemedi: ' + BUNDLE_URL));
+    document.head.appendChild(script);
+  });
 })();
 ```
 

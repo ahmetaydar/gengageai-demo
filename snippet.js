@@ -1,22 +1,30 @@
 /**
- * Paste this into the browser Console on a Koçtaş PDP.
+ * Koçtaş PDP → F12 Console → yapıştır → Enter
+ * Not: undefined dönmesi normal değil; aşağıdaki sürüm Promise döner.
  */
-(function () {
+(function gengageaiLoad() {
+  const BUNDLE_URL = 'https://gengageai-demo.pages.dev/bundle.js';
+
   if (window.__GENGAGEAI_ASSISTANT__?.initialized) {
     window.__GENGAGEAI_ASSISTANT__.widget?.open();
-    return;
+    return 'GengageAI: asistan zaten yüklü';
   }
 
-  if (document.getElementById('gengageai-assistant-loader')) {
-    return;
-  }
+  const stale = document.getElementById('gengageai-assistant-loader');
+  if (stale) stale.remove();
 
-  const script = document.createElement('script');
-  script.id = 'gengageai-assistant-loader';
-  script.src = 'https://06e77fc5.gengageai-demo.pages.dev/bundle.js';
-  script.async = true;
-  script.onerror = function () {
-    console.error('[GengageAI] Bundle yüklenemedi. Deploy URL\'sini kontrol edin.');
-  };
-  document.head.appendChild(script);
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.id = 'gengageai-assistant-loader';
+    script.src = BUNDLE_URL;
+    script.async = true;
+    script.onload = () => resolve('GengageAI: bundle yüklendi, asistan başlıyor…');
+    script.onerror = () =>
+      reject(
+        new Error(
+          'Bundle yüklenemedi. Tarayıcıda şu adresi açın: ' + BUNDLE_URL
+        )
+      );
+    document.head.appendChild(script);
+  });
 })();

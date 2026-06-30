@@ -106,4 +106,9 @@ async function bootstrap() {
   }
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('[GengageAI]', error);
+  window[GLOBAL_KEY]?.widget?.setError?.(
+    error?.message || 'Asistan başlatılamadı.'
+  );
+});
