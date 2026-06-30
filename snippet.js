@@ -14,7 +14,7 @@
 
   const script = document.createElement('script');
   script.id = 'gengageai-assistant-loader';
-  script.src = 'YOUR_DEPLOY_URL/bundle.js';
+  script.src = 'https://gengageai-demo.a-aydar2014.workers.dev/bundle.js';
   script.async = true;
   script.onerror = function () {
     console.error('[GengageAI] Bundle yüklenemedi. Deploy URL\'sini kontrol edin.');

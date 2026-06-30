@@ -20,7 +20,7 @@ export function isPromptApiSupported() {
 
 export async function checkAvailability() {
   if (!isPromptApiSupported()) {
-    return { status: 'unsupported', message: 'Bu tarayıcı yerel AI (Prompt API) desteklemiyor.' };
+    return { status: 'unsupported', message: 'Ürün asistanı bu tarayıcıda desteklenmiyor. Güncel Chrome masaüstü sürümünü deneyin.' };
   }
 
   try {
@@ -30,7 +30,7 @@ export async function checkAvailability() {
       return {
         status: 'unavailable',
         message:
-          'Gemini Nano bu cihazda kullanılamıyor. Chrome masaüstü, yeterli RAM/disk ve model indirmesi gerekir.',
+          'Ürün asistanı şu an cihazınızda kullanılamıyor. Chrome güncellemesini ve yeterli depolama alanını kontrol edin.',
       };
     }
 
@@ -38,7 +38,7 @@ export async function checkAvailability() {
   } catch (error) {
     return {
       status: 'error',
-      message: error?.message || 'Yerel AI kullanılabilirliği kontrol edilemedi.',
+      message: error?.message || 'Asistan şu an kullanılamıyor.',
     };
   }
 }

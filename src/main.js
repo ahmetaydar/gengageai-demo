@@ -1,12 +1,69 @@
-import { extractProductFacts } from './extractor.js';
+import { extractProductFacts, generateSampleQuestions } from './extractor.js';
 import { LocalProductAssistant, checkAvailability } from './assistant.js';
 import { AssistantWidget } from './ui.js';
 
 const GLOBAL_KEY = '__GENGAGEAI_ASSISTANT__';
 
+function getProductKey() {
+  const match = window.location.pathname.match(/\/p\/(\d+)/i);
+  return match ? match[1] : window.location.href;
+}
+
+async function loadProduct(app) {
+  const { widget, assistant } = app;
+
+  widget.resetConversation();
+  widget.setPreparing('Bir saniye, ürünü inceliyorum…');
+
+  const facts = await extractProductFacts(document);
+
+  widget.setPreparing('Asistan hazırlanıyor…');
+  assistant.destroy();
+  await assistant.prepare(facts, {
+    onDownloadProgress: (percent) => widget.setPreparing('Asistan hazırlanıyor…', percent),
+  });
+
+  app.productKey = getProductKey();
+  widget.setReady({ sampleQuestions: generateSampleQuestions(facts) });
+}
+
+function watchProductChanges(app) {
+  let lastKey = app.productKey;
+
+  const check = () => {
+    const currentKey = getProductKey();
+    if (currentKey === lastKey) return;
+    lastKey = currentKey;
+    loadProduct(app).catch((error) => {
+      app.widget.setError(
+        error?.message || 'Yeni ürün yüklenemedi. Sayfayı yenileyip tekrar deneyin.'
+      );
+    });
+  };
+
+  window.addEventListener('popstate', check);
+
+  ['pushState', 'replaceState'].forEach((method) => {
+    const original = history[method].bind(history);
+    history[method] = (...args) => {
+      const result = original(...args);
+      check();
+      return result;
+    };
+  });
+
+  window.setInterval(check, 1500);
+}
+
 async function bootstrap() {
-  if (window[GLOBAL_KEY]?.initialized) {
-    window[GLOBAL_KEY].widget?.open();
+  const existing = window[GLOBAL_KEY];
+
+  if (existing?.initialized) {
+    if (getProductKey() !== existing.productKey) {
+      await loadProduct(existing);
+    } else {
+      existing.widget?.open();
+    }
     return;
   }
 
@@ -15,13 +72,16 @@ async function bootstrap() {
     onAsk: (question, handlers) => assistantEngine.ask(question, handlers),
   });
 
-  window[GLOBAL_KEY] = {
+  const app = {
     initialized: true,
     widget,
     assistant: assistantEngine,
+    productKey: null,
   };
 
-  widget.setLoading('Ürün bilgileri okunuyor…');
+  window[GLOBAL_KEY] = app;
+
+  widget.setPreparing('Bir saniye, ürünü inceliyorum…');
 
   try {
     const availability = await checkAvailability();
@@ -30,14 +90,8 @@ async function bootstrap() {
       return;
     }
 
-    const facts = await extractProductFacts(document);
-
-    widget.setLoading('Yerel AI hazırlanıyor…');
-    await assistantEngine.prepare(facts, {
-      onDownloadProgress: (percent) => widget.setDownloading(percent),
-    });
-
-    widget.setReady(facts.title);
+    await loadProduct(app);
+    watchProductChanges(app);
   } catch (error) {
     const code = error?.code;
     if (code === 'unsupported' || code === 'unavailable') {
@@ -47,7 +101,7 @@ async function bootstrap() {
 
     widget.setError(
       error?.message ||
-        'Asistan başlatılamadı. Sayfayı yenileyip tekrar deneyin.'
+        'Asistan şu an başlatılamadı. Sayfayı yenileyip tekrar deneyebilirsiniz.'
     );
   }
 }

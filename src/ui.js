@@ -1,8 +1,6 @@
-const SAMPLE_QUESTIONS = [
-  'Bu kanepe hangi renk?',
-  'Depolama alanı var mı?',
-  'Kaç kişilik?',
-  'Oturma odası için uygun mu?',
+const DEFAULT_QUESTIONS = [
+  'Bu ürünün temel özellikleri neler?',
+  'Ölçüleri nedir?',
   'Satın almadan önce neyi kontrol etmeliyim?',
 ];
 
@@ -105,11 +103,21 @@ const STYLES = `
   }
 
   .progress {
-    margin-top: 12px;
-    height: 8px;
+    margin-top: 14px;
+    height: 4px;
     background: #e8f0ec;
     border-radius: 999px;
     overflow: hidden;
+  }
+
+  .progress.indeterminate > span {
+    width: 40% !important;
+    animation: shimmer 1.2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
   }
 
   .progress > span {
@@ -248,7 +256,7 @@ export class AssistantWidget {
     this.#launcher = document.createElement('button');
     this.#launcher.className = 'launcher';
     this.#launcher.type = 'button';
-    this.#launcher.textContent = 'Ürün Asistanı';
+    this.#launcher.textContent = 'Yardım';
     this.#launcher.addEventListener('click', () => this.open());
 
     this.#panel = document.createElement('section');
@@ -257,15 +265,15 @@ export class AssistantWidget {
       <header class="header">
         <div class="title-wrap">
           <h2>Ürün Asistanı</h2>
-          <p>Yerel AI · Gemini Nano</p>
+          <p>Size yardımcı olalım</p>
         </div>
         <button class="icon-btn" type="button" data-close aria-label="Kapat">×</button>
       </header>
       <div class="body">
         <div class="state-card" data-state-card>
-          <strong>Hazırlanıyor</strong>
-          <span data-state-text>Ürün bilgileri okunuyor…</span>
-          <div class="progress hidden" data-progress>
+          <strong data-state-title>Hazırlanıyor</strong>
+          <span data-state-text>Bir saniye…</span>
+          <div class="progress indeterminate" data-progress>
             <span data-progress-bar></span>
           </div>
         </div>
@@ -273,7 +281,7 @@ export class AssistantWidget {
         <div class="chips hidden" data-chips></div>
       </div>
       <form class="composer" data-composer>
-        <input type="text" placeholder="Ürün hakkında soru sorun" autocomplete="off" disabled />
+        <input type="text" placeholder="Örn. hangi renk, kaç kişilik?" autocomplete="off" disabled />
         <button type="submit" disabled>Gönder</button>
       </form>
     `;
@@ -310,29 +318,41 @@ export class AssistantWidget {
     this.#launcher.classList.remove('hidden');
   }
 
-  setLoading(message = 'Ürün bilgileri okunuyor…') {
+  setPreparing(message = 'Bir saniye…', progress) {
     this.open();
-    this.#showState('Yükleniyor', message);
+    this.#stateCard.classList.remove('hidden');
+    this.#messages.classList.add('hidden');
+    this.#chips.classList.add('hidden');
+    this.#shadow.querySelector('[data-state-title]').textContent = '';
+    this.#shadow.querySelector('[data-state-text]').textContent = message;
+
+    const progressEl = this.#shadow.querySelector('[data-progress]');
+    progressEl.classList.remove('hidden');
+
+    if (typeof progress === 'number') {
+      progressEl.classList.remove('indeterminate');
+      this.#progressBar.style.width = `${progress}%`;
+    } else {
+      progressEl.classList.add('indeterminate');
+      this.#progressBar.style.width = '40%';
+    }
+
     this.#setComposerEnabled(false);
   }
 
-  setDownloading(percent, message = 'Yerel AI modeli indiriliyor…') {
-    this.open();
-    this.#showState('Model indiriliyor', `${message} %${percent}`);
-    const progress = this.#shadow.querySelector('[data-progress]');
-    progress.classList.remove('hidden');
-    this.#progressBar.style.width = `${percent}%`;
-    this.#setComposerEnabled(false);
+  setLoading(message) {
+    this.setPreparing(message);
   }
 
-  setReady(productTitle) {
+  setReady({ sampleQuestions = DEFAULT_QUESTIONS } = {}) {
+    this.#shadow.querySelector('[data-progress]')?.classList.add('hidden');
     this.#stateCard.classList.add('hidden');
     this.#messages.classList.remove('hidden');
     this.#chips.classList.remove('hidden');
-    this.#shadow.querySelector('[data-progress]')?.classList.add('hidden');
 
+    this.#messages.innerHTML = '';
     this.#chips.innerHTML = '';
-    SAMPLE_QUESTIONS.forEach((question) => {
+    sampleQuestions.forEach((question) => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'chip';
@@ -341,22 +361,31 @@ export class AssistantWidget {
       this.#chips.appendChild(chip);
     });
 
-    if (productTitle) {
-      this.addAssistantMessage(`Merhaba! "${productTitle}" hakkında sorularınızı yanıtlayabilirim.`);
-    }
+    this.addAssistantMessage('Merhaba! Bu ürün hakkında merak ettiklerinizi sorabilirsiniz.');
 
     this.#setComposerEnabled(true);
   }
 
+  resetConversation() {
+    this.#messages.innerHTML = '';
+    this.#chips.innerHTML = '';
+    this.#messages.classList.add('hidden');
+    this.#chips.classList.add('hidden');
+    this.#isBusy = false;
+    this.#setComposerEnabled(false);
+  }
+
   setUnsupported(message) {
     this.open();
-    this.#showState('Yerel AI kullanılamıyor', message);
+    this.#showState('Şu an kullanılamıyor', message);
+    this.#shadow.querySelector('[data-progress]')?.classList.add('hidden');
     this.#setComposerEnabled(false);
   }
 
   setError(message) {
     this.open();
     this.#showState('Bir sorun oluştu', message);
+    this.#shadow.querySelector('[data-progress]')?.classList.add('hidden');
     this.#setComposerEnabled(false);
   }
 
@@ -393,8 +422,8 @@ export class AssistantWidget {
     this.#stateCard.classList.remove('hidden');
     this.#messages.classList.add('hidden');
     this.#chips.classList.add('hidden');
-    this.#stateCard.querySelector('strong').textContent = title;
-    this.#stateCard.querySelector('[data-state-text]').textContent = message;
+    this.#shadow.querySelector('[data-state-title]').textContent = title;
+    this.#shadow.querySelector('[data-state-text]').textContent = message;
   }
 
   #setComposerEnabled(enabled) {
@@ -423,7 +452,7 @@ export class AssistantWidget {
       }
     } catch (error) {
       assistantNode.remove();
-      this.addErrorMessage(error?.message || 'Cevap üretilemedi.');
+      this.addErrorMessage(error?.message || 'Şu an yanıt veremiyorum. Lütfen tekrar deneyin.');
     } finally {
       this.#isBusy = false;
       this.#setComposerEnabled(true);
