@@ -40,7 +40,7 @@ Cloudflare Dashboard → Workers & Pages → projeniz → **Settings → Build**
 
 Deploy command alanına `npx wrangler deploy` yazmayın. Build bittikten sonra Cloudflare `dist/` klasörünü otomatik yayınlar.
 
-Bundle URL: `https://<proje-adiniz>.pages.dev/bundle.js`
+Bundle URL: `https://06e77fc5.gengageai-demo.pages.dev/bundle.js`
 
 ### Yöntem B — Wrangler ile static assets
 
@@ -66,7 +66,7 @@ Deploy command kullanacaksanız repoda `wrangler.jsonc` hazır. Ayarlar:
   if (document.getElementById('gengageai-assistant-loader')) return;
   const script = document.createElement('script');
   script.id = 'gengageai-assistant-loader';
-  script.src = 'https://YOUR-DEPLOY-URL/bundle.js';
+  script.src = 'https://06e77fc5.gengageai-demo.pages.dev/bundle.js';
   script.async = true;
   document.head.appendChild(script);
 })();

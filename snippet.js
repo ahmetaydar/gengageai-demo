@@ -1,6 +1,5 @@
 /**
  * Paste this into the browser Console on a Koçtaş PDP.
- * Replace YOUR_DEPLOY_URL with your hosted bundle URL after deploy.
  */
 (function () {
   if (window.__GENGAGEAI_ASSISTANT__?.initialized) {
@@ -14,7 +13,7 @@
 
   const script = document.createElement('script');
   script.id = 'gengageai-assistant-loader';
-  script.src = 'https://gengageai-demo.a-aydar2014.workers.dev/bundle.js';
+  script.src = 'https://06e77fc5.gengageai-demo.pages.dev/bundle.js';
   script.async = true;
   script.onerror = function () {
     console.error('[GengageAI] Bundle yüklenemedi. Deploy URL\'sini kontrol edin.');
