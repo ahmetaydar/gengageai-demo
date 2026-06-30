@@ -3,6 +3,7 @@ import { LocalProductAssistant, checkAvailability } from './assistant.js';
 import { AssistantWidget } from './ui.js';
 
 const GLOBAL_KEY = '__GENGAGEAI_ASSISTANT__';
+const VERSION = '2';
 
 function getProductKey() {
   const match = window.location.pathname.match(/\/p\/(\d+)/i);
@@ -74,6 +75,7 @@ async function bootstrap() {
 
   const app = {
     initialized: true,
+    version: VERSION,
     widget,
     assistant: assistantEngine,
     productKey: null,
